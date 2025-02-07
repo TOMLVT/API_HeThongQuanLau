@@ -28,8 +28,8 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        string hashedPassword = HashPassword(request.MatKhau); // Hash mật khẩu khi đăng nhập
-        var user = await _sqlDataAccess.LoginAsync(request.Email, hashedPassword);
+      
+        var user = await _sqlDataAccess.LoginAsync(request.Email, request.MatKhau);
         if (user == null)
         {
             return Unauthorized(new { message = "Sai tài khoản hoặc mật khẩu!" });
@@ -48,14 +48,13 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        string hashedPassword = HashPassword(request.MatKhau);  // Hash mật khẩu khi đăng ký
-
+      
         var newUser = new NhanVien
         {
             HoTen = request.HoTen,
             Email = request.Email,
             SDT = request.SDT,
-            MatKhau = hashedPassword,  // Lưu mật khẩu đã được hash
+            MatKhau = request.MatKhau,  // Lưu mật khẩu đã được hash
             MaPQ = request.MaPQ
         };
 
@@ -66,21 +65,6 @@ public class AuthController : ControllerBase
         }
 
         return Ok(new { message = "Đăng ký thành công!" });
-    }
-
-    // 🔹 Hash mật khẩu sử dụng SHA-256
-    private string HashPassword(string password)
-    {
-        using (SHA256 sha256 = SHA256.Create())
-        {
-            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            StringBuilder builder = new StringBuilder();
-            foreach (byte b in bytes)
-            {
-                builder.Append(b.ToString("x2")); // Chuyển byte sang dạng hex
-            }
-            return builder.ToString();
-        }
     }
 }
 

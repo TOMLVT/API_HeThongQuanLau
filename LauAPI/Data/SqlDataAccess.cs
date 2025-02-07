@@ -89,14 +89,14 @@ public class SqlDataAccess
                         TongNgayCong = reader.IsDBNull(7) ? 0 : reader.GetInt32(7),
                         TongLuong = reader.IsDBNull(8) ? 0 : reader.GetDecimal(8),
                         HinhAnh = reader.IsDBNull(9) ? null : reader.GetString(9),
-                        MaPQ = reader.GetInt32(10),                     
+                        MaPQ = reader.GetInt32(10),
                     });
                 }
             }
         }
         return users;
     }
-  
+
 
     // -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -107,12 +107,12 @@ public class SqlDataAccess
         {
             await connection.OpenAsync();
 
-            // Câu truy vấn SQL để lấy thông tin người dùng từ cơ sở dữ liệu
             var query = @"
-                SELECT NV.MaNV, NV.HoTen, NV.Email, NV.MatKhau, NV.MaPQ
-                FROM NhanVien NV
-                JOIN PhanQuyen PQ ON NV.MaPQ = PQ.MaPQ
-                WHERE NV.Email = @Email";
+            SELECT NV.MaNV, NV.HoTen, NV.GioiTinh, NV.SDT, NV.CCCD, NV.Email, NV.MatKhau, 
+                   NV.TongNgayCong, NV.TongLuong, NV.HinhAnh, PQ.MaPQ
+            FROM NhanVien NV 
+            JOIN PhanQuyen PQ ON NV.MaPQ = PQ.MaPQ
+            WHERE NV.Email = @Email";
 
             using (var command = new SqlCommand(query, connection))
             {
@@ -122,28 +122,33 @@ public class SqlDataAccess
                 {
                     if (await reader.ReadAsync())
                     {
-                        // Lấy mật khẩu đã mã hóa từ cơ sở dữ liệu
-                        string hashedPasswordFromDb = reader.GetString(3);
+                        string hashedPasswordFromDb = reader.GetString(6); // Mật khẩu đã băm trong DB
 
-                        // Mã hóa mật khẩu từ đầu vào và so sánh với mật khẩu trong cơ sở dữ liệu
-                        string inputHashedPassword = HashPassword(matKhau);
+                        // Băm mật khẩu nhập vào bằng SHA-256
+                        string hashedInputPassword = HashPassword(matKhau);
 
-                        if (hashedPasswordFromDb == inputHashedPassword)
+                        if (hashedInputPassword == hashedPasswordFromDb)
                         {
-                            // Nếu mật khẩu đúng, trả về đối tượng NhanVien
                             return new NhanVien
                             {
                                 MaNV = reader.GetInt32(0),
                                 HoTen = reader.GetString(1),
-                                Email = reader.GetString(2),
-                                MaPQ = reader.GetInt32(4),
+                                GioiTinh = reader.IsDBNull(2) ? null : reader.GetString(2),
+                                SDT = reader.GetString(3),
+                                CCCD = reader.IsDBNull(4) ? null : reader.GetString(4),
+                                Email = reader.GetString(5),
+                                MatKhau = hashedPasswordFromDb,
+                                TongNgayCong = reader.IsDBNull(7) ? 0 : reader.GetInt32(7),
+                                TongLuong = reader.IsDBNull(8) ? 0 : reader.GetDecimal(8),
+                                HinhAnh = reader.IsDBNull(9) ? null : reader.GetString(9),
+                                MaPQ = reader.GetInt32(10),
                             };
                         }
                     }
                 }
             }
         }
-        return null; // Trả về null nếu không tìm thấy người dùng hoặc mật khẩu sai
+        return null; // Đăng nhập thất bại
     }
 
     // -------------------------------------------------------------------------------------------------------------------------------------------
@@ -169,8 +174,8 @@ public class SqlDataAccess
 
             // Thêm nhân viên mới vào database
             var insertQuery = @"
-            INSERT INTO NhanVien (HoTen, Email, SDT, MatKhau, MaPQ, TongLuong)
-            VALUES (@HoTen, @Email, @SDT, @MatKhau, @MaPQ, 0)";
+        INSERT INTO NhanVien (HoTen, Email, SDT, MatKhau, MaPQ, TongLuong, GioiTinh, CCCD, HinhAnh)
+        VALUES (@HoTen, @Email, @SDT, @MatKhau, @MaPQ, 0, @GioiTinh, @CCCD, @HinhAnh)";
 
             using (var command = new SqlCommand(insertQuery, connection))
             {
@@ -179,12 +184,16 @@ public class SqlDataAccess
                 command.Parameters.AddWithValue("@SDT", newUser.SDT);
                 command.Parameters.AddWithValue("@MatKhau", hashedPassword);
                 command.Parameters.AddWithValue("@MaPQ", newUser.MaPQ);
+                command.Parameters.AddWithValue("@GioiTinh", newUser.GioiTinh ?? (object)DBNull.Value); // Nếu không có giá trị, set là null
+                command.Parameters.AddWithValue("@CCCD", newUser.CCCD ?? (object)DBNull.Value); // Nếu không có giá trị, set là null
+                command.Parameters.AddWithValue("@HinhAnh", newUser.HinhAnh ?? (object)DBNull.Value); // Nếu không có giá trị, set là null
 
                 int rowsAffected = await command.ExecuteNonQueryAsync();
                 return rowsAffected > 0;
             }
         }
     }
+
 
     // -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -207,5 +216,3 @@ public class SqlDataAccess
 
 
 // -------------------------------------------------------------------------------------------------------------------------------------------
-
-
