@@ -16,7 +16,10 @@ public class AuthController : ControllerBase
         _sqlDataAccess = sqlDataAccess;
     }
 
-    // 🔹 API lấy danh sách nhân viên
+
+    // -------------------------------------------------------------------------------------------------------------------------------------------
+    // Lấy thông tin danh sách nhân viên trong API
+
     [HttpGet("users")]
     public async Task<IActionResult> GetAllUsers()
     {
@@ -24,7 +27,9 @@ public class AuthController : ControllerBase
         return Ok(users);
     }
 
-    // 🔹 API đăng nhập
+    // -------------------------------------------------------------------------------------------------------------------------------------------
+    // Đăng nhập thông tin nhân viên 
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
@@ -44,7 +49,9 @@ public class AuthController : ControllerBase
         });
     }
 
-    // 🔹 API đăng ký
+    // -------------------------------------------------------------------------------------------------------------------------------------------
+    // Đăng ký thông tin 
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
@@ -68,7 +75,9 @@ public class AuthController : ControllerBase
     }
 }
 
-// 🔹 Model cho LoginRequest
+// -------------------------------------------------------------------------------------------------------------------------------------------
+
+
 public class LoginRequest
 {
     public string Email { get; set; }
