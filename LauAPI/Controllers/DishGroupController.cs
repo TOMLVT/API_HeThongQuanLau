@@ -4,19 +4,19 @@ using System.Threading.Tasks;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TablesController : ControllerBase
+public class DishGroupController : ControllerBase
 {
     private readonly SqlDataAccess _sqlDataAccess;
 
-    public TablesController(SqlDataAccess sqlDataAccess)
+    public DishGroupController(SqlDataAccess sqlDataAccess)
     {
         _sqlDataAccess = sqlDataAccess;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTables(int maBan)
+    public async Task<IActionResult> GetDishGroup()
     {
-        var tables = await _sqlDataAccess.GetTablesAsync(maBan);
-        return Ok(tables);
+        var nhomMonAn = await _sqlDataAccess.GetDishGroupAsync();
+        return Ok(nhomMonAn);
     }
 }
