@@ -62,7 +62,7 @@ public class SqlDataAccess
     }
     // -------------------------------------------------------------------------------------------------------------------------------------------
 
-    // LẤY DANH SÁCH NHÂN VIÊN
+    // LẤY DANH SÁCH NHÂN VIÊN 
     public async Task<List<NhanVien>> GetAllUsersAsync()
     {
         var users = new List<NhanVien>();
@@ -677,6 +677,219 @@ public class SqlDataAccess
                 }
             }
         }
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------------------------------
+    // THÔNG TIN PHÂN CÔNG CA LÀM 
+    public async Task<List<PhanCongCaLam>> GetworkAsync()
+    {
+        var works = new List<PhanCongCaLam>();
+
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+
+            var query = @"
+                SELECT 
+                    pc.MaPhanCong,
+                    pc.MaNV,
+                    nv.HoTen,
+                    pc.MaCa,
+                    cl.TenCa,
+                    cl.GioBatDau,
+                    cl.GioKetThuc,
+                    pc.NgayLam
+                FROM PhanCongCaLam pc
+                JOIN CaLam cl ON pc.MaCa = cl.MaCa
+                JOIN NhanVien nv ON pc.MaNV = nv.MaNV";
+
+            using (var command = new SqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var work = new PhanCongCaLam
+                        {
+                            MaPhanCong = reader.GetInt32(0),
+                            MaNV = reader.GetInt32(1),
+                            HoTen = reader.GetString(2),
+                            MaCa = reader.GetInt32(3),
+                            Tenca = reader.GetString(4),
+                            GioBatDau = reader.GetTimeSpan(5),
+                            GioKetThuc = reader.GetTimeSpan(6),
+                            NgayLam = reader.GetDateTime(7)
+                        };
+
+                        works.Add(work);
+                    }
+                }
+            }
+        }
+
+        return works;
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------------------------------
+    // THÔNG TIN CHẤM CÔNG NHÂN VIÊN 
+    public async Task ChamCongNhanVienAsync(ChamCongNhanVien chamCong)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+
+            var query = @"
+                INSERT INTO ChamCongNhanVien (NgayCong, TrangThai, MaNV)
+                VALUES (@NgayCong, @TrangThai, @MaNV)";
+
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@NgayCong", chamCong.NgayCong);
+                command.Parameters.AddWithValue("@TrangThai", chamCong.TrangThai);
+                command.Parameters.AddWithValue("@MaNV", chamCong.MaNV);
+
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+    }
+    // -------------------------------------------------------------------------------------------------------------------------------------------
+    // NGUYÊN LIỆU THÊM LẨU 
+    public async Task<List<NguyenLieuThemLau>> GetNguyenLieuAsync()
+    {
+        var nguyenLieuList = new List<NguyenLieuThemLau>();
+
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+
+            var query = @"
+                SELECT MaNL, TenNguyenLieu, DonViTinh, DonGia, SoLuong
+                FROM NguyenLieuThemLau";
+
+            using (var command = new SqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var nguyenLieu = new NguyenLieuThemLau
+                        {
+                            MaNL = reader.GetInt32(0),
+                            TenNguyenLieu = reader.GetString(1),
+                            DonViTinh = reader.IsDBNull(2) ? null : reader.GetString(2),
+                            DonGia = reader.GetDecimal(3),
+                            SoLuong = reader.GetInt32(4)
+                        };
+
+                        nguyenLieuList.Add(nguyenLieu);
+                    }
+                }
+            }
+        }
+
+        return nguyenLieuList;
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------------------------------
+    // THÔNG TIN SỬ DỤNG NGUYÊN LIỆU
+    public async Task<List<SuDungNguyenLieu>> GetSuDungNguyenLieuAsync()
+    {
+        var suDungList = new List<SuDungNguyenLieu>();
+
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+
+            var query = @"
+                SELECT 
+                    sdnl.MaSuDung, 
+                    sdnl.SoLuong, 
+                    sdnl.NgayXuat, 
+                    sdnl.MaMonAn, 
+                    ma.TenMon,
+                    sdnl.MaNL, 
+                    nl.TenNguyenLieu
+                FROM SuDungNguyenLieu sdnl
+                JOIN MonAn ma ON sdnl.MaMonAn = ma.MaMonAn
+                JOIN NguyenLieuThemLau nl ON sdnl.MaNL = nl.MaNL";
+
+            using (var command = new SqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var suDung = new SuDungNguyenLieu
+                        {
+                            MaSuDung = reader.GetInt32(0),
+                            SoLuong = reader.GetInt32(1),
+                            NgayXuat = reader.GetDateTime(2),
+                            MaMonAn = reader.GetInt32(3),
+                            TenMonAn = reader.GetString(4),
+                            MaNL = reader.GetInt32(5),
+                            TenNguyenLieu = reader.GetString(6)
+                        };
+
+                        suDungList.Add(suDung);
+                    }
+                }
+            }
+        }
+
+        return suDungList;
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------------------------------
+    //LẤY THÔNG TIN HÓA ĐƠN KHÁCH HÀNG
+    public async Task<List<HoaDonKhachHang>> GetHoaDonKhachHangAsync()
+    {
+        var hoaDonList = new List<HoaDonKhachHang>();
+
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+
+            var query = @"
+                SELECT 
+                    MaCTHD, 
+                    NgayThanhToan, 
+                    MaMonAn, 
+                    TenMon, 
+                    MaBan, 
+                    MaCTBH, 
+                    SoLuong, 
+                    PhanTramGiamGia, 
+                    DonGia, 
+                    ThanhTien
+                FROM HoaDonKhachHang";
+
+            using (var command = new SqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var hoaDon = new HoaDonKhachHang
+                        {
+                            MaCTHD = reader.GetInt32(0),
+                            NgayThanhToan = reader.GetDateTime(1),
+                            MaMonAn = reader.IsDBNull(2) ? null : reader.GetInt32(2),
+                            TenMon = reader.IsDBNull(3) ? null : reader.GetString(3),
+                            MaBan = reader.IsDBNull(4) ? null : reader.GetInt32(4),
+                            MaCTBH = reader.GetInt32(5),
+                            SoLuong = reader.GetInt32(6),
+                            PhanTramGiamGia = reader.GetDecimal(7),
+                            DonGia = reader.GetDecimal(8),
+                            ThanhTien = reader.GetDecimal(9)
+                        };
+
+                        hoaDonList.Add(hoaDon);
+                    }
+                }
+            }
+        }
+
+        return hoaDonList;
     }
     // -------------------------------------------------------------------------------------------------------------------------------------------
 }
