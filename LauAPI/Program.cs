@@ -8,22 +8,30 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins", policy =>
     {
-        policy.AllowAnyOrigin()  // Cho phép t?t c? các ngu?n (origins)
-              .AllowAnyMethod()  // Cho phép t?t c? các ph??ng th?c HTTP (GET, POST, PUT, DELETE...)
-              .AllowAnyHeader(); // Cho phép t?t c? các headers
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
 // Thêm d?ch v? API
 builder.Services.AddControllers();
 
+// C?u hình Kestrel ?? l?ng nghe trên t?t c? ??a ch? IP
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(8080); // API s? ch?y trên c?ng 8080
+    options.ListenAnyIP(8081); // N?u b?n mu?n thêm c?ng 8081
+});
+
 var app = builder.Build();
 
 // S? d?ng CORS
 app.UseCors("AllowAllOrigins");
 
-// C?u hình các middleware và các route
+// Middleware
 app.UseAuthorization();
 app.MapControllers();
 
+// Ch?y ?ng d?ng
 app.Run();
