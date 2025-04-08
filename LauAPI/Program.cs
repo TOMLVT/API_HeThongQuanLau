@@ -20,18 +20,19 @@ builder.Services.AddControllers();
 // C?u hình Kestrel ?? l?ng nghe trên t?t c? ??a ch? IP
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(8080); // API s? ch?y trên c?ng 8080
-    options.ListenAnyIP(8081); // N?u b?n mu?n thêm c?ng 8081
+    options.ListenAnyIP(5137);
+  //  options.ListenAnyIP(8081);
 });
+
+// Logging rõ ràng h?n khi ch?y trong Docker
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 var app = builder.Build();
 
-// S? d?ng CORS
-app.UseCors("AllowAllOrigins");
-
 // Middleware
+app.UseCors("AllowAllOrigins");
 app.UseAuthorization();
 app.MapControllers();
 
-// Ch?y ?ng d?ng
 app.Run();
