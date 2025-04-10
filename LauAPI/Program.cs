@@ -1,3 +1,5 @@
+using Microsoft.Extensions.FileProviders;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // C?u hình Dependency Injection
@@ -21,7 +23,7 @@ builder.Services.AddControllers();
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenAnyIP(5137);
-  //  options.ListenAnyIP(8081);
+    // options.ListenAnyIP(8081);
 });
 
 // Logging rõ ràng h?n khi ch?y trong Docker
@@ -32,6 +34,18 @@ var app = builder.Build();
 
 // Middleware
 app.UseCors("AllowAllOrigins");
+
+
+// C?u hình l?y ?nh t? g?c c?a ?ng d?ng
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "HeThongQuanLau")),
+    RequestPath = ""
+});
+
+
+
 app.UseAuthorization();
 app.MapControllers();
 

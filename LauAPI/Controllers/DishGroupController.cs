@@ -14,9 +14,23 @@ public class DishGroupController : ControllerBase
     }
 
     [HttpGet]
+  
     public async Task<IActionResult> GetDishGroup()
     {
         var nhomMonAn = await _sqlDataAccess.GetDishGroupAsync();
+
+        var baseUrl = $"{Request.Scheme}://{Request.Host}/images/";
+        foreach (var item in nhomMonAn)
+        {
+            if (!string.IsNullOrEmpty(item.HinhAnh))
+            {
+                var fileName = Path.GetFileName(item.HinhAnh);
+                item.HinhAnh = $"{baseUrl}{Uri.EscapeDataString(fileName)}";
+            }
+        }
+
         return Ok(nhomMonAn);
     }
+
+
 }

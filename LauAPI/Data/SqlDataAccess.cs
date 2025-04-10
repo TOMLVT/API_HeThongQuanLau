@@ -236,7 +236,8 @@ public class SqlDataAccess
                         var nhomMonAn = new NhomMonAn
                         {
                             MaNhomMonAn = reader.GetInt32(0),
-                            TenNhom = reader.GetString(1)                           
+                            TenNhom = reader.GetString(1),
+                            HinhAnh = reader.IsDBNull(2) ? null : reader.GetString(2),
                         };
 
                         dishGroup.Add(nhomMonAn);
@@ -259,13 +260,19 @@ public class SqlDataAccess
 
             var query = @"
                 SELECT 
-                    ma.MaMonAn, 
-                    ma.TenMon, 
-                    ma.HinhAnh, 
-                    ma.DonViTinh, 
-                    ma.GiaTien, 
-                    ma.MaNhomMonAn, 
-                    nma.TenNhom
+                ma.MaMonAn, 
+                ma.TenMon, 
+                ma.HinhAnh, 
+                ma.DonViTinh, 
+                ma.GiaTien, 
+                ma.GiaSauGiam,
+                ma.MaNhomMonAn, 
+                nma.TenNhom,
+                ma.MaQRMonAn,
+                ma.MoTaMonAn,
+                ma.SoLuongConLai,
+                ma.SoLuotDaBan,
+                ma.GiamGia
                 FROM MonAn ma
                 LEFT JOIN NhomMonAn nma ON ma.MaNhomMonAn = nma.MaNhomMonAn";
 
@@ -282,9 +289,17 @@ public class SqlDataAccess
                             HinhAnh = reader.IsDBNull(2) ? null : reader.GetString(2),
                             DonViTinh = reader.IsDBNull(3) ? null : reader.GetString(3),
                             GiaTien = reader.GetDecimal(4),
-                            MaNhomMonAn = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5),
-                            TenNhom = reader.IsDBNull(6) ? null : reader.GetString(6) // Lấy tên nhóm món ăn
+                            GiaSauGiam = reader.IsDBNull(5) ? 0 : reader.GetDecimal(5),
+                            MaNhomMonAn = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
+                            TenNhom = reader.IsDBNull(7) ? null : reader.GetString(7),
+                            MaQRMonAn = reader.IsDBNull(8) ? null : reader.GetString(8),
+                            MoTaMonAn = reader.IsDBNull(9) ? null : reader.GetString(9),
+                            SoLuongConLai = reader.IsDBNull(10) ? 0 : reader.GetInt32(10),
+                            SoLuotDaBan = reader.IsDBNull(11) ? 0 : reader.GetInt32(11),
+                            GiamGia = reader.IsDBNull(12) ? 0 : reader.GetDecimal(12)
                         };
+
+
 
                         dishes.Add(monAn);
                     }
