@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // C?u hình Dependency Injection
 builder.Services.AddSingleton<SqlDataAccess>();
+builder.Services.AddSingleton<DishGroupDataAccess>();
 
 // C?u hình CORS
 builder.Services.AddCors(options =>
@@ -36,7 +37,7 @@ var app = builder.Build();
 app.UseCors("AllowAllOrigins");
 
 
-// C?u hình l?y ?nh t? g?c c?a ?ng d?ng
+// C?u hình l?y ?nh t? server l?u tr? -------------------------
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
@@ -44,6 +45,14 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = ""
 });
 
+
+// C?u hình ph?c v? t?p t?nh t? th? m?c wwwroot/images ---------------------------------------------------------
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images")), // ???ng d?n ??n th? m?c ch?a ?nh
+    RequestPath = "/images"  // ??m b?o ?nh s? ???c truy c?p qua /images/{tên ?nh}
+});
 
 
 app.UseAuthorization();

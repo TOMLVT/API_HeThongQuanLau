@@ -10,6 +10,8 @@ using System.Text;
 using LauAPI.Model;
 using System.Data.Common;
 using Microsoft.AspNetCore.Mvc;
+
+
 public class SqlDataAccess
 {
     private readonly string _connectionString;
@@ -63,7 +65,7 @@ public class SqlDataAccess
     // -------------------------------------------------------------------------------------------------------------------------------------------
 
     // LẤY DANH SÁCH NHÂN VIÊN 
-    public async Task<List<NhanVien>> GetAllUsersAsync()
+    public async Task<List<NhanVien>> GetAllUsersAsync() // Lưu ý truy vấn đọc theo thứ tự để reander bên dưới trong câu truy vấn ===========
     {
         var users = new List<NhanVien>();
 
@@ -72,10 +74,10 @@ public class SqlDataAccess
             await connection.OpenAsync();
 
             var query = @"
-            SELECT NV.MaNV, NV.HoTen, NV.GioiTinh, NV.SDT, NV.CCCD, NV.Email, NV.MatKhau, 
-                   NV.TongNgayCong, NV.TongLuong, NV.HinhAnh, PQ.MaPQ
-            FROM NhanVien NV 
-            JOIN PhanQuyen PQ ON NV.MaPQ = PQ.MaPQ";
+                SELECT NV.MaNV, NV.HoTen, NV.GioiTinh, NV.SDT, NV.CCCD, NV.Email, NV.MatKhau, 
+                       NV.TongNgayCong, NV.TongLuong, NV.HinhAnh, NV.DiaChi, PQ.MaPQ
+                FROM NhanVien NV 
+                JOIN PhanQuyen PQ ON NV.MaPQ = PQ.MaPQ";
 
             using (var command = new SqlCommand(query, connection))
             using (var reader = await command.ExecuteReaderAsync())
@@ -94,13 +96,16 @@ public class SqlDataAccess
                         TongNgayCong = reader.IsDBNull(7) ? 0 : reader.GetInt32(7),
                         TongLuong = reader.IsDBNull(8) ? 0 : reader.GetDecimal(8),
                         HinhAnh = reader.IsDBNull(9) ? null : reader.GetString(9),
-                        MaPQ = reader.GetInt32(10),
+                        DiaChi = reader.IsDBNull(10) ? null : reader.GetString(10),
+                        MaPQ = reader.GetInt32(11),
                     });
+
                 }
             }
         }
         return users;
     }
+
 
 
     // -------------------------------------------------------------------------------------------------------------------------------------------
@@ -907,6 +912,7 @@ public class SqlDataAccess
         return hoaDonList;
     }
     // -------------------------------------------------------------------------------------------------------------------------------------------
+   
 }
 
 

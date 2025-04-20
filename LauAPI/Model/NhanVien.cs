@@ -9,6 +9,7 @@
         public string CCCD { get; set; }
         public string Email { get; set; }
         public string MatKhau { get; set; }
+        public string DiaChi { get; set; }
         public int TongNgayCong { get; set; }
         public decimal TongLuong { get; set; }
         public int MaPQ { get; set; }
