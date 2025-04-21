@@ -2,10 +2,13 @@ using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// C?u hình Dependency Injection
+// C?u hình Injection ------------------------------------------------------
+
 builder.Services.AddSingleton<SqlDataAccess>();
 builder.Services.AddSingleton<DishGroupDataAccess>();
+builder.Services.AddSingleton<SqlMonAnAccess>();
 
+// ------------------------------------------------------
 // C?u hình CORS
 builder.Services.AddCors(options =>
 {
