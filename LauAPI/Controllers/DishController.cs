@@ -16,14 +16,62 @@ public class DishController : ControllerBase
         _sqlMonAnAccess = sqlMonAnAccess;
     }
 
-
-    [HttpGet]
-    public async Task<IActionResult> GetDishs(int maMonAn)
+    [HttpPost("add-to-cart")]
+    public async Task<IActionResult> AddToCart([FromBody] OrderRequest request)
     {
-        var tables = await _sqlDataAccess.GetDishesAsync(maMonAn);
+        var dish = await _sqlDataAccess.GetDishByIdAsync(request.MaMonAn);
+        if (dish == null || dish.SoLuongConLai < request.SoLuong)
+        {
+            return BadRequest(new { message = "Số lượng không đủ hoặc món ăn không tồn tại." });
+        }
+        return Ok(new { message = "Thêm vào giỏ hàng thành công" });
+    }
 
+    [HttpPost("update-stock-on-order")]
+    public async Task<IActionResult> UpdateStockOnOrder([FromBody] List<OrderRequest> items)
+    {
+        var success = await _sqlMonAnAccess.UpdateStockOnOrderAsync(items);
+        if (success)
+        {
+            return Ok(new { message = "Cập nhật số lượng món ăn thành công" });
+        }
+        return BadRequest(new { message = "Không thể cập nhật kho. Kiểm tra số lượng còn lại." });
+    }
+
+    [HttpPost("rollback-stock")]
+    public async Task<IActionResult> RollbackStock([FromBody] List<OrderRequest> items)
+    {
+        var success = await _sqlMonAnAccess.RollbackStockAsync(items);
+        if (success)
+        {
+            return Ok(new { message = "Rollback số lượng món ăn thành công" });
+        }
+        return BadRequest(new { message = "Không thể rollback kho." });
+    }
+
+    [HttpGet("{maMonAn}")]
+    public async Task<IActionResult> GetDish(int maMonAn)
+    {
+        var dish = await _sqlDataAccess.GetDishByIdAsync(maMonAn);
+        if (dish == null)
+        {
+            return NotFound(new { message = "Không tìm thấy món ăn" });
+        }
+
+        if (!string.IsNullOrEmpty(dish.HinhAnh))
+        {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}/images/";
+            var fileName = Path.GetFileName(dish.HinhAnh);
+            dish.HinhAnh = $"{baseUrl}{Uri.EscapeDataString(fileName)}";
+        }
+        return Ok(dish);
+    }
+    [HttpGet]
+    public async Task<IActionResult> GetAllDishes()
+    {
+        var dishes = await _sqlDataAccess.GetAllDishesAsync();
         var baseUrl = $"{Request.Scheme}://{Request.Host}/images/";
-        foreach (var item in tables)
+        foreach (var item in dishes)
         {
             if (!string.IsNullOrEmpty(item.HinhAnh))
             {
@@ -31,8 +79,9 @@ public class DishController : ControllerBase
                 item.HinhAnh = $"{baseUrl}{Uri.EscapeDataString(fileName)}";
             }
         }
-        return Ok(tables);
+        return Ok(dishes);
     }
+
     [HttpPost]
     [DisableRequestSizeLimit]
     public async Task<IActionResult> AddDish([FromForm] MonAn monAn, [FromForm] IFormFile image)

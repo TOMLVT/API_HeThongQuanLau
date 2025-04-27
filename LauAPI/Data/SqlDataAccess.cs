@@ -253,8 +253,147 @@ public class SqlDataAccess
 
         return dishGroup;
     }
+
+    public async Task<List<AnhSlider>> GetAnhSliderAsync()
+    {
+        var sliderList = new List<AnhSlider>();
+
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+
+            var query = "SELECT * FROM AnhSlider";
+            using (var command = new SqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var slider = new AnhSlider
+                        {
+                            MaSlider = reader.GetInt32(0),
+                            HinhAnh = reader.IsDBNull(1) ? null : reader.GetString(1),
+                        };
+
+                        sliderList.Add(slider);
+                    }
+                }
+            }
+        }
+
+        return sliderList;
+    }
+
+
     // -------------------------------------------------------------------------------------------------------------------------------------------
     // LẤY THÔNG TIN MÓN ĂN 
+    public async Task<MonAn> GetDishByIdAsync(int maMonAn)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+            var query = @"
+            SELECT 
+                ma.MaMonAn, 
+                ma.TenMon, 
+                ma.HinhAnh, 
+                ma.DonViTinh, 
+                ma.GiaTien, 
+                ma.GiaSauGiam,
+                ma.MaNhomMonAn, 
+                nma.TenNhom,
+                ma.MaQRMonAn,
+                ma.MoTaMonAn,
+                ma.SoLuongConLai,
+                ma.SoLuotDaBan,
+                ma.GiamGia
+            FROM MonAn ma
+            LEFT JOIN NhomMonAn nma ON ma.MaNhomMonAn = nma.MaNhomMonAn
+            WHERE ma.MaMonAn = @MaMonAn";
+
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@MaMonAn", maMonAn);
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        return new MonAn
+                        {
+                            MaMonAn = reader.GetInt32(0),
+                            TenMon = reader.IsDBNull(1) ? null : reader.GetString(1),
+                            HinhAnh = reader.IsDBNull(2) ? null : reader.GetString(2),
+                            DonViTinh = reader.IsDBNull(3) ? null : reader.GetString(3),
+                            GiaTien = reader.GetDecimal(4),
+                            GiaSauGiam = reader.IsDBNull(5) ? 0 : reader.GetDecimal(5),
+                            MaNhomMonAn = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
+                            TenNhom = reader.IsDBNull(7) ? null : reader.GetString(7),
+                            MaQRMonAn = reader.IsDBNull(8) ? null : reader.GetString(8),
+                            MoTaMonAn = reader.IsDBNull(9) ? null : reader.GetString(9),
+                            SoLuongConLai = reader.IsDBNull(10) ? 0 : reader.GetInt32(10),
+                            SoLuotDaBan = reader.IsDBNull(11) ? 0 : reader.GetInt32(11),
+                            GiamGia = reader.IsDBNull(12) ? 0 : reader.GetDecimal(12),
+                        };
+                    }
+                    return null;
+                }
+            }
+        }
+    }
+
+    public async Task<List<MonAn>> GetAllDishesAsync()
+    {
+        var dishes = new List<MonAn>();
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+            var query = @"
+            SELECT 
+                ma.MaMonAn, 
+                ma.TenMon, 
+                ma.HinhAnh, 
+                ma.DonViTinh, 
+                ma.GiaTien, 
+                ma.GiaSauGiam,
+                ma.MaNhomMonAn, 
+                nma.TenNhom,
+                ma.MaQRMonAn,
+                ma.MoTaMonAn,
+                ma.SoLuongConLai,
+                ma.SoLuotDaBan,
+                ma.GiamGia
+            FROM MonAn ma
+            LEFT JOIN NhomMonAn nma ON ma.MaNhomMonAn = nma.MaNhomMonAn";
+
+            using (var command = new SqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        dishes.Add(new MonAn
+                        {
+                            MaMonAn = reader.GetInt32(0),
+                            TenMon = reader.IsDBNull(1) ? null : reader.GetString(1),
+                            HinhAnh = reader.IsDBNull(2) ? null : reader.GetString(2),
+                            DonViTinh = reader.IsDBNull(3) ? null : reader.GetString(3),
+                            GiaTien = reader.GetDecimal(4),
+                            GiaSauGiam = reader.IsDBNull(5) ? 0 : reader.GetDecimal(5),
+                            MaNhomMonAn = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
+                            TenNhom = reader.IsDBNull(7) ? null : reader.GetString(7),
+                            MaQRMonAn = reader.IsDBNull(8) ? null : reader.GetString(8),
+                            MoTaMonAn = reader.IsDBNull(9) ? null : reader.GetString(9),
+                            SoLuongConLai = reader.IsDBNull(10) ? 0 : reader.GetInt32(10),
+                            SoLuotDaBan = reader.IsDBNull(11) ? 0 : reader.GetInt32(11),
+                            GiamGia = reader.IsDBNull(12) ? 0 : reader.GetDecimal(12),
+                        });
+                    }
+                }
+            }
+        }
+        return dishes;
+    }
+
     public async Task<List<MonAn>> GetDishesAsync(int maMonAn)
     {
         var dishes = new List<MonAn>();

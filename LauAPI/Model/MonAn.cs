@@ -12,8 +12,8 @@
         public int? MaNhomMonAn { get; set; }
         public string MaQRMonAn { get; set; }
         public string MoTaMonAn { get; set; }
-        public int? SoLuongConLai { get; set; }
-        public int? SoLuotDaBan { get; set; }
+        public int SoLuongConLai { get; set; }
+        public int SoLuotDaBan { get; set; }
         public decimal? GiamGia { get; set; }
     }
 

@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<SqlDataAccess>();
 builder.Services.AddSingleton<DishGroupDataAccess>();
 builder.Services.AddSingleton<SqlMonAnAccess>();
+builder.Services.AddSingleton<AnhSliderDataAccess>();
 
 // ------------------------------------------------------
 // C?u hình CORS
